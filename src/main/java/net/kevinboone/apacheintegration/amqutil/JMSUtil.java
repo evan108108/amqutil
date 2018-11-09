@@ -65,7 +65,7 @@ public static void outputMessage (String format, Message message, String file)
           {
           System.out.println (message);
           }
-  if (format.equals ("text") || format.equals ("textonly"))
+  if (format.equals ("text"))
           {
           if (message instanceof TextMessage)
             System.out.println (((TextMessage)message).getText());
@@ -119,10 +119,8 @@ public static Message makeMessage (Session session, String file, int length,
     if (file.equals(""))
       {
       // Make a text string
-      StringBuffer sb = new StringBuffer (length);
       for (int j = 0; j < length; j++)
-          sb.append ((char)('0' + (j % 10))); 
-      text = new String (sb);
+          text += (char)('0' + (j % 10)); 
       }
     else
       {

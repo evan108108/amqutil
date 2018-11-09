@@ -39,9 +39,7 @@ public class CmdConsume extends Cmd
     String pass = DEFAULT_PASS;
     String destination = DEFAULT_DESTINATION; 
     String properties = "";
-    String selector = null;
     boolean showpercent = false;
-    boolean clientAck = false;
     String format = "short";
 
     String file = ""; // No default -- if not given, don't read/write file
@@ -50,20 +48,12 @@ public class CmdConsume extends Cmd
     int length = 500; // Length of message generated internally
     String url = "";  // No default -- if not given, don't use it
     int sleep = 0;
-    int linger = 0;
     int batchSize = 0; 
-    int delay = 0; 
 
     String[] nonSwitchArgs = cl.getArgs();
     if (nonSwitchArgs.length > 0)
       n = Integer.parseInt (nonSwitchArgs[0]);
 
-    String _delay = cl.getOptionValue ("delay");
-    if (_delay != null) delay = Integer.parseInt (_delay);
-
-    String _selector = cl.getOptionValue ("selector");
-    if (_selector != null) selector = _selector;
-  
     String _destination = cl.getOptionValue ("destination");
     if (_destination != null) destination = _destination;
   
@@ -75,9 +65,6 @@ public class CmdConsume extends Cmd
 
     String _sleep = cl.getOptionValue ("sleep");
     if (_sleep != null) sleep = Integer.parseInt (_sleep);
-
-    String _linger = cl.getOptionValue ("linger");
-    if (_linger != null) linger = Integer.parseInt (_linger);
 
     String _batchSize = cl.getOptionValue ("batch");
     if (_batchSize != null) batchSize  = Integer.parseInt (_batchSize);
@@ -100,60 +87,26 @@ public class CmdConsume extends Cmd
     if (cl.hasOption ("percent"))
       showpercent = true;
     
-    if (cl.hasOption ("client-ack"))
-      clientAck = true;
-    
     // For convenience, set a flag if we are batch processing
     boolean batch = false;
     if (batchSize != 0) batch = true; 
 
-    ConnectionFactory factory = getFactory (host, port, url); 
+    ActiveMQConnectionFactory factory = getFactory (host, port, url); 
 
     Connection connection = factory.createConnection(user, pass);
     connection.start();
 
-    Session session;
-    if (clientAck)
-      {
-      session = connection.createSession
-          (batch, Session.CLIENT_ACKNOWLEDGE);
-      }
-    else
-      {
-      session = connection.createSession
-          (batch, Session.AUTO_ACKNOWLEDGE);
-      }
+    Session session = connection.createSession
+        (batch, Session.AUTO_ACKNOWLEDGE);
 
     Queue queue = session.createQueue(destination);
 
-    MessageConsumer consumer = null;
-    if (selector == null)
-      consumer = session.createConsumer(queue);
-    else
-      {
-      consumer = session.createConsumer(queue, selector);
-      }
+    MessageConsumer consumer = session.createConsumer(queue);
 
     int oldpercent = 0;
     for (int i = 0; i < n; i++)
         {
         javax.jms.Message message = consumer.receive();
-	if (delay != 0)
-	  {
-	  try
-	    {
-            Thread.sleep (delay * 1000);
-	    }
-	  catch (Exception e)
-	    {
-	    }
-	  }
-
-        if (linger != 0)
-          Thread.sleep (linger);
-
-        if (clientAck)
-          message.acknowledge();
 
         if (batch)
           if ((i + 1) % batchSize == 0) session.commit();
@@ -173,9 +126,6 @@ public class CmdConsume extends Cmd
         }
     
     if (batch) session.commit();
- 
-    if (consumer != null) consumer.close();
-    if (session != null) session.close();
 
     connection.close();
 
@@ -188,11 +138,7 @@ public class CmdConsume extends Cmd
     super.setupOptions();
     options.addOption ("b", "batch", true, "set batch size");
     options.addOption (null, "format", true, 
-      "display format: none|short|long|text|textonly");
-    options.addOption (null, "delay", true, 
-      "delay (seconds) after receiving each message");
-    options.addOption (null, "client-ack", false, 
-      "use client acknowledgment");
+      "display format: none|short|long|text");
     options.addOption ("d", "destination", true, 
       "destination (queue or topic) name");
     options.addOption ("i", "file", true, 
@@ -200,11 +146,8 @@ public class CmdConsume extends Cmd
     options.addOption (null, "host", true, "set server hostname");
     options.addOption (null, "percent", false, 
       "show progress percentage");
-    options.addOption (null, "linger", true, "delay (ms) between consume and commit in batch mode");
     options.addOption ("p", "password", true, "broker password for connection");
     options.addOption (null, "port", true, "set server port");
-    options.addOption (null, "selector", true, 
-      "message selector expression");
     options.addOption (null, "sleep", true, 
       "sleep for the specified number of milliseconds between each message");
     options.addOption ("u", "user", true, "broker username for connection");

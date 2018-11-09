@@ -47,6 +47,7 @@ public class CmdPublish extends Cmd
     boolean nonPersistent = false;
     String properties = "";
     String type = "text";
+    String jmstype = "";
 
     int n = 1; // n is the number of messages to process, or a specific
                //   message number, depending on content
@@ -58,27 +59,27 @@ public class CmdPublish extends Cmd
 
     String _destination = cl.getOptionValue ("destination");
     if (_destination != null) destination = _destination;
-  
+
     String _host = cl.getOptionValue ("host");
     if (_host != null) host = _host;
-  
+
     String _type = cl.getOptionValue ("msgtype");
     if (_type != null) type = _type;
-  
+
     String _port = cl.getOptionValue ("port");
     if (_port != null) port = Integer.parseInt (_port);
 
     String _file = cl.getOptionValue ("file");
-    if (_file != null) file = _file; 
+    if (_file != null) file = _file;
 
     String _user = cl.getOptionValue ("user");
-    if (_user != null) user = _user; 
+    if (_user != null) user = _user;
 
     String _pass = cl.getOptionValue ("password");
-    if (_pass != null) pass = _pass; 
+    if (_pass != null) pass = _pass;
 
     String _url = cl.getOptionValue ("url");
-    if (_url != null) url = _url; 
+    if (_url != null) url = _url;
 
     String _sleep = cl.getOptionValue ("sleep");
     if (_sleep != null) sleep = Integer.parseInt (_sleep);
@@ -102,7 +103,7 @@ public class CmdPublish extends Cmd
     if (batchSize != 0) batch = true; 
 
 
-    ConnectionFactory factory = getFactory (host, port, url); 
+    ActiveMQConnectionFactory factory = getFactory (host, port, url); 
 
     Connection connection = factory.createConnection(user, pass);
     Session session = connection.createSession
@@ -117,6 +118,8 @@ public class CmdPublish extends Cmd
 
     javax.jms.Message message = JMSUtil.makeMessage (session, file, 
       length, type);
+
+    if(jmstype != "") message.setJMSType(jmstype);
 
     int oldpercent = 0;
     for (int i = 0; i < n; i++)
@@ -155,6 +158,8 @@ public class CmdPublish extends Cmd
     options.addOption ("d", "destination", true, 
       "destination (queue or topic) name");
     options.addOption ("m", "msgtype", true, 
+      "text|bytes");
+    options.addOption ("j", "jmstype", true,
       "text|bytes");
     options.addOption (null, "host", true, "set server hostname");
     options.addOption ("p", "password", true, "broker password for connection");

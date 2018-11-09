@@ -104,7 +104,7 @@ public class CmdPing extends Cmd
     boolean batch = false;
     if (batchSize != 0) batch = true; 
 
-    ConnectionFactory factory = getFactory (host, port, url); 
+    ActiveMQConnectionFactory factory = getFactory (host, port, url); 
 
     Connection connection = factory.createConnection(user, pass);
     connection.start();
@@ -162,7 +162,7 @@ public class CmdPing extends Cmd
     super.setupOptions();
     options.addOption ("b", "batch", true, "set batch size");
     options.addOption (null, "format", true, 
-      "display format: none|short|long|text|textonly");
+      "display format: none|short|long|text");
     options.addOption ("d", "destination", true, 
       "destination (queue or topic) name");
     options.addOption ("i", "file", true, 

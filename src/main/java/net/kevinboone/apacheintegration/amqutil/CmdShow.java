@@ -74,7 +74,7 @@ public class CmdShow extends Cmd
     String _url = cl.getOptionValue ("url");
     if (_url != null) url = _url; 
 
-    ConnectionFactory factory = getFactory (host, port, url); 
+    ActiveMQConnectionFactory factory = getFactory (host, port, url); 
 
     Connection connection = factory.createConnection(user, pass);
     connection.start();
@@ -118,7 +118,7 @@ public class CmdShow extends Cmd
     {
     super.setupOptions();
     options.addOption (null, "format", true, 
-      "display format: none|short|long|text|textonly");
+      "display format: none|short|long|text");
     options.addOption ("d", "destination", true, 
       "destination (queue or topic) name");
     options.addOption (null, "host", true, "set server hostname");
